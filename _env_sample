@@ -1,0 +1,10 @@
+NODE_ENV=development
+PORT=5001
+
+
+DIALECT=mysql
+HOST=54.219.140.66
+DB_PORT=3306
+DB_USERNAME=master
+PASSWORD=qaWSedRFp;OLikUJ1
+DATABASE=dbdimitra_rlt_auth
