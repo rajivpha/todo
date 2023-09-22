@@ -1,7 +1,121 @@
-<h2>Todo List</h2>
-<ul>
-  {{#each tasks}}
-    <li>{{this.title}}</li>
-  {{/each}}
+<h1>
+  To-Do App
+</h1>
 
-</ul>
+<h2>Task List</h2>
+<label for='status'>Status:</label>
+<select id='status' name='status' required>
+  <option value='all'>All</option>
+  <option value='upcoming'>Upcoming</option>
+  <option value='done'>Done</option>
+</select>
+<table>
+  <thead>
+    <tr>
+      <th>Title</th>
+      <th>Date</th>
+      <th>Status</th>
+      <th>Description</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    {{#each tasks}}
+      <tr>
+        <td>{{this.title}}</td>
+        <td>{{this.date}}</td>
+        <td>{{this.status}}</td>
+        <td>{{this.description}}</td>
+        <td>
+          <button id='edit-btn' type='button' data-id='{{id}}'>Edit</button>
+          <button
+            id='delete-btn'
+            type='button'
+            data-id='{{id}}'
+          >x</button></td></tr>
+    {{/each}}
+  </tbody>
+</table>
+
+<form id='task-add-form' action='/task' method='post'>
+  <label for='title'>Title:</label>
+  <input type='text' id='title' name='title' required />
+
+  <label for='date'>Date:</label>
+  <input type='date' id='date' name='date' required />
+
+  <label for='status'>Status:</label>
+  <select id='status' name='status' required>
+    <option value='upcoming'>Upcoming</option>
+    <option value='done'>Done</option>
+  </select>
+
+  <label for='description'>Description:</label>
+  <textarea id='description' name='description' rows='4' required></textarea>
+
+  <button type='submit'>Submit</button>
+</form>
+
+<!-- Add this form after the task table -->
+<form id='edit-form' style='display: none;'>
+  <input type='hidden' id='edit-task-id' name='task-id' value='' />
+  <label for='edit-title'>Title:</label>
+  <input type='text' id='edit-title' name='title' required />
+
+  <label for='edit-date'>Date:</label>
+  <input type='date' id='edit-date' name='date' required />
+
+  <label for='edit-status'>Status:</label>
+  <select id='edit-status' name='status' required>
+    <option value='upcoming'>Upcoming</option>
+    <option value='done'>Done</option>
+  </select>
+
+  <label for='edit-description'>Description:</label>
+  <textarea
+    id='edit-description'
+    name='description'
+    rows='4'
+    required
+  ></textarea>
+
+  <button type='submit'>Save Changes</button>
+</form>
+<script>
+  function deleteTodo(id) { console.log("Deleting todo ",id); const req = new
+  Request(`/task/${id}`); fetch(req,{ method: 'DELETE' }).then(function(res) {
+  setTimeout(function () {location.reload();},600); }); }
+  document.getElementById('delete-btn').addEventListener('click', function (e) {
+  console.log("Clicked!",e.target.getAttribute("data-id"));
+  deleteTodo(e.target.getAttribute("data-id")); }); function filterTasks(status)
+  { const rows = document.querySelectorAll('tbody tr'); rows.forEach(row => {
+  const rowStatus = row.querySelector('td:nth-child(3)').textContent; if (status
+  === 'all' || rowStatus === status) { row.style.display = ''; } else {
+  row.style.display = 'none'; } }); } // Event listener for status select box
+  document.getElementById('status').addEventListener('change', function (e) {
+  const selectedStatus = e.target.value; filterTasks(selectedStatus); });
+  document.getElementById('edit-btn').addEventListener('click', function (e) {
+  document.getElementById("task-add-form").style.display = 'none'; if (e.target
+  && e.target.id === 'edit-btn') { const taskId =
+  e.target.getAttribute('data-id'); const req = new Request(`/task/${taskId}`);
+  fetch(req,{ method: 'GET' }).then((response) => { return response.json();
+  }).then((task) => { if (task) { document.getElementById('edit-task-id').value
+  = task.id; document.getElementById('edit-title').value = task.title;
+  document.getElementById('edit-date').value = task.date;
+  document.getElementById('edit-status').value = task.status;
+  document.getElementById('edit-description').value = task.description;
+  document.getElementById('edit-form').style.display = 'block'; } }) } });
+  document.getElementById('edit-form').addEventListener('submit', function (e) {
+  e.preventDefault(); const taskId =
+  document.getElementById('edit-task-id').value; const editedTask = { id:
+  taskId, title: document.getElementById('edit-title').value, date:
+  document.getElementById('edit-date').value, status:
+  document.getElementById('edit-status').value, description:
+  document.getElementById('edit-description').value, };
+  document.getElementById('edit-form').style.display = 'none'; const req = new
+  Request(`/task/${taskId}`); fetch(req, { headers: { 'Content-Type':
+  'application/json' }, method: 'PUT', body: JSON.stringify(editedTask)
+  }).then(function(res) { setTimeout(function () {location.reload();},600);
+  });});
+</script>
